@@ -8,14 +8,20 @@ import Filtr from "../Filter/Filter";
 
 export default class App extends Component {
   state = {
-    contacts: [
-      { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-      { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-      { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-      { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-    ],
+    contacts: [],
     filter: "",
   };
+
+  componentDidMount() {
+    const contactsMem = JSON.parse(localStorage.getItem("contacts"));
+    if(contactsMem) this.setState({ contacts: contactsMem });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
+    }
+  }
 
   handleAddContact = ({ name, number }) => {
     const contact = {
@@ -37,9 +43,6 @@ export default class App extends Component {
         contacts: [contact, ...contacts],
       }));
     }
-    // this.setState(({ contacts }) => ({
-    //     contacts: [...contacts, contact],
-    //   }));
   };
 
   deleteContact = (id) =>
@@ -61,14 +64,20 @@ export default class App extends Component {
   };
 
   render() {
-
+    const { contacts } = this.state;
     return (
       <div className={style.container}>
         <h1>Phonebook</h1>
         <AddContact handleAddContact={this.handleAddContact} />
         <h2>Contacts</h2>
-        <Filtr value={this.state.filter} onChange={this.changeFilter}/>
-        <ContactList contacts={this.visibleContacts()} delet={this.deleteContact}/>
+        {contacts.length > 0 ?
+          <>
+            <Filtr value={this.state.filter} onChange={this.changeFilter}/>
+            <ContactList contacts={this.visibleContacts()} delet={this.deleteContact} />
+          </>
+        : (<h4>Your phonebook is empty</h4>)
+        }
+        
       </div>
     );
   }
